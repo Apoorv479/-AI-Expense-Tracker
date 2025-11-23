@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Expense Tracker & Chat Assistant</title>
+
+  <!-- 
+    ==============================================
+    SETUP INSTRUCTIONS:
+    ==============================================
+    Replace YOUR_GEMINI_API_KEY below (line 29) with your actual Gemini API key.
+    Get your free API key from: https://aistudio.google.com/app/apikey
+    ==============================================
+  -->
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Orbitron:wght@500;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* ---------- Theme Variables ---------- */
+    :root {
+      --primary-color: #4dd0e1;
+      --secondary-color: #ff6f61;
+      --background-gradient: linear-gradient(135deg, #1c1f26, #232a34, #1c1f26);
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --text-color: #e3e7ec;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --highlight: rgba(77, 208, 225, 0.4);
+      --ai-suggest-color: #81c784;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+      color: var(--text-color);
+      transition: all 0.3s ease;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      background: var(--background-gradient);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ---------- Subtle Floating Lights ---------- */
+    .light {
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.25;
+      z-index: 0;
+      animation: drift 20s ease-in-out infinite alternate;
+    }
+
+    .light1 {
+      top: -80px;
+      left: -100px;
+      background: #4dd0e1;
+    }
+
+    .light2 {
+      bottom: -80px;
+      right: -120px;
+      background: #ff6f61;
+      animation-delay: 5s;
+    }
+
+    @keyframes drift {
+      from {
+        transform: translateY(0) scale(1);
+      }
+      to {
+        transform: translateY(-30px) scale(1.1);
+      }
+    }
+
+    /* ---------- Container ---------- */
+    .container {
+      width: 100%;
+      max-width: 1400px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    /* ---------- Card ---------- */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      padding: 25px;
+      animation: fadeIn 1s ease;
+      max-height: fit-content;
+    }
+
+    .card h2 {
+      font-family: "Orbitron", sans-serif;
+      color: var(--primary-color);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      font-size: 1.3rem;
+    }
+
+    /* ---------- Form Elements ---------- */
+    .form-group label {
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #b8ecf2;
+      font-size: 0.9rem;
+    }
+
+    input,
+    select {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 10px;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 8px var(--highlight);
+    }
+
+    select option {
+      background-color: #2a2f38;
+      color: #e3e7ec;
+    }
+
+    /* ---------- Buttons ---------- */
+    button {
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(45deg, var(--primary-color), #26a69a);
+      color: #fff;
+      border: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      padding: 10px 20px;
+      font-size: 0.9rem;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      background: linear-gradient(45deg, #5de2f0, #2dc4b8);
+    }
+
+    .btn-danger {
+      background: var(--secondary-color);
+      color: #fff;
+      border: none;
+    }
+
+    .btn-danger:hover {
+      background: #ff7a73;
+      transform: scale(1.03);
+    }
+
+    .btn-edit {
+      background: #81c784;
+      color: #fff;
+      border: none;
+    }
+
+    .btn-edit:hover {
+      background: #9be3a7;
+      transform: scale(1.03);
+    }
+
+    .btn-filter {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      margin: 0 5px;
+    }
+
+    .btn-filter:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: var(--primary-color);
+    }
+
+    .btn-filter.active {
+      background: var(--primary-color);
+      border-color: var(--primary-color);
+      color: #1c1f26;
+    }
+
+    /* ---------- Custom Scrollbar ---------- */
+    .custom-scroll::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: var(--primary-color);
+      border-radius: 10px;
+      opacity: 0.5;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #5de2f0;
+    }
+
+    /* ---------- Table ---------- */
+    .expense-table-container {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 15px;
+    }
+
+    .expense-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .expense-table th,
+    .expense-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: middle;
+      font-size: 0.9rem;
+    }
+
+    .expense-table th {
+      color: #a6dce5;
+      font-weight: 600;
+      text-transform: uppercase;
+      position: sticky;
+      top: 0;
+      background: var(--card-bg);
+      backdrop-filter: blur(18px);
+      z-index: 10;
+    }
+
+    .expense-table tr:hover {
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .expense-table .actions {
+      text-align: right;
+    }
+
+    .expense-table .actions .btn {
+      padding: 6px 12px;
+      width: 75px;
+      border-radius: 6px;
+      margin: 0 3px;
+      font-size: 0.85em;
+      vertical-align: middle;
+    }
+
+    .summary-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .total-summary {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .filter-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .summary-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .summary-card h4 {
+      font-size: 0.85rem;
+      color: #a6dce5;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .summary-card .amount {
+      font-size: 1.3rem;
+      color: var(--primary-color);
+      font-weight: 700;
+    }
+
+    .custom-period {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .custom-period input {
+      width: 140px;
+      padding: 8px;
+      font-size: 0.85rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #aaa;
+      font-style: italic;
+      padding: 40px 20px;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ---------- Custom Modal Styles ---------- */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .custom-modal {
+      background: var(--card-bg);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 4px 25px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+    }
+
+    .modal-overlay.show .custom-modal {
+      transform: scale(1);
+    }
+
+    .custom-modal h3 {
+      font-family: "Orbitron", sans-serif;
+      color: var(--secondary-color);
+      margin-bottom: 15px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+    }
+    
+    .validation-message {
+      color: var(--secondary-color);
+      font-size: 0.85rem;
+      display: block;
+      min-height: 1.2em;
+    }
+    
+    .ai-suggestion {
+      font-size: 0.9rem;
+      color: var(--ai-suggest-color);
+      margin-top: 5px;
+      display: block;
+      font-style: italic;
+      min-height: 1.2em;
+    }
+
+    /* ---------- CHAT ASSISTANT STYLES ---------- */
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .chat-messages {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 15px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-bottom: 15px;
+        background: rgba(0, 0, 0, 0.1);
+        max-height: 450px;
+        min-height: 300px;
+    }
+
+    .chat-message {
+        padding: 10px 14px;
+        border-radius: 12px;
+        margin-bottom: 10px;
+        max-width: 80%;
+        line-height: 1.5;
+        font-size: 0.9rem;
+    }
+
+    .user-message {
+        background-color: var(--primary-color);
+        color: #1c1f26;
+        margin-left: auto;
+        border-bottom-right-radius: 2px;
+        text-align: right;
+    }
+
+    .ai-message {
+        background-color: rgba(255, 255, 255, 0.15);
+        margin-right: auto;
+        border-bottom-left-radius: 2px;
+    }
+
+    .error-message {
+        background-color: rgba(255, 111, 97, 0.2);
+        color: var(--secondary-color);
+        margin-right: auto;
+        border-bottom-left-radius: 2px;
+    }
+
+    .chat-input-area {
+        display: flex;
+        gap: 10px;
+    }
+
+    .chat-input-area input {
+        flex-grow: 1;
+    }
+
+    .loading-dots span {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        animation: bounce 1.4s infinite ease-in-out both;
+        margin: 0 2px;
+    }
+    .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+    @keyframes bounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1.0); }
+    }
+
+    /* ---------- AI INSIGHTS STYLES ---------- */
+    .insights-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .insights-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-insight {
+      background: linear-gradient(45deg, #9575cd, #7e57c2);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-insight:hover {
+      background: linear-gradient(45deg, #b39ddb, #9575cd);
+      transform: translateY(-2px);
+    }
+
+    .btn-tips {
+      background: linear-gradient(45deg, #4caf50, #388e3c);
+    }
+
+    .btn-tips:hover {
+      background: linear-gradient(45deg, #66bb6a, #4caf50);
+    }
+
+    .insights-content {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      max-height: 500px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .insights-content.show {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .insights-paragraph {
+      line-height: 1.8;
+      font-size: 1rem;
+      color: var(--text-color);
+      text-align: justify;
+    }
+
+    .tips-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .tips-list li {
+      padding: 12px 15px;
+      margin-bottom: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 4px solid var(--ai-suggest-color);
+      border-radius: 6px;
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    .tips-list li:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(5px);
+    }
+
+    .insights-loading {
+      text-align: center;
+      padding: 30px;
+      font-size: 1rem;
+      color: var(--primary-color);
+    }
+
+    .collapse-toggle {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      margin-left: auto;
+    }
+
+    .collapse-toggle:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary-color);
+    }
+
+    @media (max-width: 1200px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+      .full-width {
+        grid-column: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+      .card {
+        padding: 20px;
+      }
+      .summary-cards {
+        grid-template-columns: 1fr;
+      }
+      .filter-controls {
+        justify-content: center;
+      }
+      .insights-buttons {
+        width: 100%;
+      }
+      .btn-insight, .btn-tips {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    // ==============================================
+    // REPLACE WITH YOUR GEMINI API KEY
+    // Get it from: https://aistudio.google.com/app/apikey
+    // ==============================================
+    const API_KEY = "AIzaSyBscBWLM6dQPz-vlvgH3KBjFORFuUVKh50"; 
+  </script>
+
+  <div class="light light1"></div>
+  <div class="light light2"></div>
+
+  <div class="modal-overlay" id="delete-modal-overlay">
+    <div class="custom-modal">
+      <h3 id="modal-title">Confirm Deletion</h3>
+      <p>Are you sure you want to delete this expense record?</p>
+      <div class="modal-buttons">
+        <button class="btn btn-danger" id="confirm-delete">Delete</button>
+        <button class="btn btn-secondary" id="cancel-delete">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+    <section class="card animate__animated animate__fadeInUp">
+      <h2>Add New Expense</h2>
+      <form id="expense-form" class="expense-form">
+        <input type="hidden" id="expense-id" />
+        <div class="form-group mb-3">
+          <label for="amount">Amount (₹)</label>
+          <input type="number" id="amount" step="0.01" required placeholder="e.g., 250.50"/>
+          <span id="amount-validation" class="validation-message"></span>
+        </div>
+        <div class="form-group mb-3">
+          <label for="description">Description</label>
+          <input type="text" id="description" placeholder="e.g., Coffee with friends" />
+          <span id="description-validation" class="validation-message"></span>
+        </div>
+        <div class="form-group mb-3">
+          <label for="date">Date</label>
+          <input type="date" id="date" required />
+          <span id="date-validation" class="validation-message"></span>
+        </div>
+        <div class="form-group mb-3">
+          <label for="category">Category</label>
+          <select id="category" required>
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+            <option value="Groceries">Groceries</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Bills">Bills</option>
+            <option value="Other">Other</option>
+          </select>
+          <span id="ai-category-suggestion" class="ai-suggestion"></span>
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="submit-button">
+          Add Expense
+        </button>
+      </form>
+    </section>
+
+    <section class="card animate__animated animate__fadeInUp animate__delay-1s">
+        <h2>Chat Assistant</h2>
+        <div class="chat-container">
+            <div class="chat-messages custom-scroll" id="chat-messages"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="e.g., Add ₹500 for groceries today" />
+                <button class="btn btn-primary" id="chat-send">Send</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="card full-width animate__animated animate__fadeInUp animate__delay-2s">
+      <h2>Expense History</h2>
+      
+      <div class="summary-cards" id="summary-cards">
+        <div class="summary-card">
+          <h4>Total Expenses</h4>
+          <div class="amount" id="total-all">₹0.00</div>
+        </div>
+        <div class="summary-card">
+          <h4>Last 1 Month</h4>
+          <div class="amount" id="total-1month">₹0.00</div>
+        </div>
+        <div class="summary-card">
+          <h4>Last 3 Months</h4>
+          <div class="amount" id="total-3months">₹0.00</div>
+        </div>
+      </div>
+
+      <div class="custom-period">
+        <label style="font-size: 0.9rem;">Custom Period:</label>
+        <input type="date" id="custom-start-date" />
+        <input type="date" id="custom-end-date" />
+        <button class="btn btn-filter" id="apply-custom-period">Apply</button>
+        <div class="amount" id="custom-period-total" style="margin-left: 15px; font-size: 1.1rem;"></div>
+      </div>
+
+      <div class="summary-section">
+        <div class="filter-controls">
+          <label style="font-size: 0.9rem; margin-right: 5px;">Sort:</label>
+          <button class="btn btn-filter active" data-sort="recent">Recently Added</button>
+          <button class="btn btn-filter" data-sort="date">By Date</button>
+        </div>
+      </div>
+
+      <div class="expense-list-container">
+        <div class="expense-table-container custom-scroll">
+          <table class="expense-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="expense-list"></tbody>
+          </table>
+        </div>
+        <div id="empty-state" class="empty-state" style="display: none">
+          You haven't added any expenses yet.
+        </div>
+      </div>
+    </section>
+
+    <!-- NEW: AI INSIGHTS & TIPS SECTION -->
+    <section class="card full-width animate__animated animate__fadeInUp animate__delay-3s">
+      <div class="insights-header">
+        <h2 style="margin: 0;">AI Insights & Tips</h2>
+        <div class="insights-buttons">
+          <button class="btn btn-insight" id="generate-insights-btn">📊 Monthly Insights</button>
+          <button class="btn btn-tips" id="generate-tips-btn">💡 Smart Tips</button>
+          <button class="collapse-toggle" id="collapse-insights-btn" style="display: none;">Collapse</button>
+        </div>
+      </div>
+      
+      <div class="insights-content custom-scroll" id="insights-content">
+        <!-- AI-generated content will appear here -->
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const STORAGE_KEY = "aiExpenseTracker_v1";
+      const form = document.getElementById("expense-form");
+      const amountInput = document.getElementById("amount");
+      const descriptionInput = document.getElementById("description");
+      const dateInput = document.getElementById("date");
+      const categorySelect = document.getElementById("category");
+      const expenseIdInput = document.getElementById("expense-id");
+      const submitButton = document.getElementById("submit-button");
+      const expenseList = document.getElementById("expense-list");
+      const emptyState = document.getElementById("empty-state");
+
+      const deleteModalOverlay = document.getElementById('delete-modal-overlay');
+      const confirmDeleteBtn = document.getElementById('confirm-delete');
+      const cancelDeleteBtn = document.getElementById('cancel-delete');
+      let expenseIdToDelete = null;
+      
+      const AI_CATEGORIES = ["Food", "Transport", "Entertainment", "Groceries", "Bills", "Other"];
+      
+      const chatMessages = document.getElementById('chat-messages');
+      const chatInput = document.getElementById('chat-input');
+      const chatSendBtn = document.getElementById('chat-send');
+
+      const totalAllEl = document.getElementById('total-all');
+      const total1MonthEl = document.getElementById('total-1month');
+      const total3MonthsEl = document.getElementById('total-3months');
+      const customStartDateEl = document.getElementById('custom-start-date');
+      const customEndDateEl = document.getElementById('custom-end-date');
+      const applyCustomPeriodBtn = document.getElementById('apply-custom-period');
+      const customPeriodTotalEl = document.getElementById('custom-period-total');
+
+      // NEW: Insights elements
+      const generateInsightsBtn = document.getElementById('generate-insights-btn');
+      const generateTipsBtn = document.getElementById('generate-tips-btn');
+      const insightsContent = document.getElementById('insights-content');
+      const collapseInsightsBtn = document.getElementById('collapse-insights-btn');
+
+      let currentSort = 'recent';
+
+      const categorySuggestionDisplay = document.getElementById('ai-category-suggestion');
+      let debounceTimer;
+      const DEBOUNCE_DELAY = 500;
+
+      // ==============================================
+      // UTILITY: Get expenses from localStorage
+      // ==============================================
+      const getExpenses = () => {
+        try {
+          const data = localStorage.getItem(STORAGE_KEY);
+          return data ? JSON.parse(data) : [];
+        } catch (e) {
+          localStorage.removeItem(STORAGE_KEY); 
+          return [];
+        }
+      };
+
+      // ==============================================
+      // UTILITY: Save expenses to localStorage
+      // ==============================================
+      const saveExpenses = (expenses) => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
+      };
+
+      // ==============================================
+      // GEMINI API: Chat Assistant
+      // ==============================================
+      const getChatResponse = async (userInput) => {
+        const today = new Date().toISOString().split('T')[0];
+        const expenseData = JSON.stringify(getExpenses());
+
+        const prompt = `You are a conversational expense tracking assistant. Your task is to analyze the user's request and the provided expense data to determine the user's intent. You MUST respond with a valid JSON object and nothing else. Current date: ${today}. Current expenses data: ${expenseData}. User request: "${userInput}". Analyze the request and determine if the intent is to 'add' a new expense or to 'query' existing expenses. If the intent is 'add', extract the description, amount, and date (calculate absolute date in 'YYYY-MM-DD' format if relative), infer the category from this list: ${AI_CATEGORIES.join(", ")}, and formulate a confirmation reply. The JSON should be: {"intent": "add", "expense": {"description": "...", "amount": ..., "date": "YYYY-MM-DD", "category": "..."}, "reply": "..."}. If the intent is 'query', analyze the data, formulate a reply, and use JSON: {"intent": "query", "reply": "..."}. If the request is unclear, use JSON: {"intent": "error", "reply": "I'm sorry, I couldn't understand that."}. Provide only the JSON object in your response.`;
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
+
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            const result = await response.json();
+            return JSON.parse(result.candidates[0].content.parts[0].text);
+        } catch (error) {
+            console.error("Gemini Chat API call failed:", error);
+            return null;
+        }
+      };
+
+      // ==============================================
+      // GEMINI API: Generate Monthly Insights Summary
+      // This function calls Gemini API to generate a detailed
+      // paragraph summarizing the user's monthly expenses
+      // ==============================================
+      const generateMonthlyInsights = async () => {
+        const expenses = getExpenses();
+        
+        if (expenses.length === 0) {
+          return {
+            success: false,
+            message: "No expense data available. Add some expenses to generate insights!"
+          };
+        }
+
+        // Get current month expenses
+        const today = new Date();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        
+        const currentMonthExpenses = expenses.filter(exp => {
+          const expDate = new Date(exp.date);
+          return expDate.getMonth() === currentMonth && expDate.getFullYear() === currentYear;
+        });
+
+        // Get previous month expenses for comparison
+        const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+        const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+        
+        const prevMonthExpenses = expenses.filter(exp => {
+          const expDate = new Date(exp.date);
+          return expDate.getMonth() === prevMonth && expDate.getFullYear() === prevYear;
+        });
+
+        const expenseDataForAI = {
+          currentMonth: currentMonthExpenses,
+          previousMonth: prevMonthExpenses,
+          allExpenses: expenses
+        };
+
+        const prompt = `You are a financial insights assistant. Analyze the following expense data and generate a detailed, conversational paragraph (200-300 words) summarizing the user's spending for the current month.
+
+Current Month Expenses: ${JSON.stringify(currentMonthExpenses)}
+Previous Month Expenses: ${JSON.stringify(prevMonthExpenses)}
+
+Include in your summary:
+1. Total spending this month
+2. Top spending categories
+3. Comparison with previous month (increase/decrease)
+4. Notable spending patterns or trends
+5. A motivational comment or personalized recommendation
+
+Write in a friendly, conversational tone as if you're a financial advisor talking to a friend. Make it insightful and actionable.`;
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }]
+                })
+            });
+
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            const result = await response.json();
+            const insightText = result.candidates[0].content.parts[0].text;
+
+            return {
+              success: true,
+              insight: insightText
+            };
+        } catch (error) {
+            console.error("Gemini Insights API call failed:", error);
+            return {
+              success: false,
+              message: "Failed to generate insights. Please check your API key and connection."
+            };
+        }
+      };
+
+      // ==============================================
+      // GEMINI API: Generate Smart Tips
+      // This function calls Gemini API to generate actionable
+      // spending tips based on user's expense patterns
+      // ==============================================
+      const generateSmartTips = async () => {
+        const expenses = getExpenses();
+        
+        if (expenses.length === 0) {
+          return {
+            success: false,
+            message: "No expense data available. Add some expenses to get personalized tips!"
+          };
+        }
+
+        // Get recent expenses (last 30 days)
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        
+        const recentExpenses = expenses.filter(exp => {
+          const expDate = new Date(exp.date);
+          return expDate >= thirtyDaysAgo && expDate <= today;
+        });
+
+        const prompt = `You are a personal finance advisor. Analyze the following expense data and provide 5-7 actionable, specific tips to help the user manage their spending better.
+
+Recent Expenses (Last 30 Days): ${JSON.stringify(recentExpenses)}
+All Expenses: ${JSON.stringify(expenses)}
+
+Generate tips that are:
+- Specific and actionable (not generic advice)
+- Based on actual spending patterns you observe
+- Practical and easy to implement
+- Encouraging and positive in tone
+- Include emojis where appropriate
+
+Format: Return ONLY a JSON array of strings, each string being one tip.
+Example: ["Tip 1 text", "Tip 2 text", ...]
+
+Focus on patterns like:
+- Frequent spending in certain categories
+- High amounts in specific areas
+- Recent spending increases
+- Opportunities to save
+- Budget optimization suggestions`;
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: "application/json" }
+                })
+            });
+
+            if (!response.ok) throw new Error(`API error: ${response.status}`);
+            const result = await response.json();
+            const tipsArray = JSON.parse(result.candidates[0].content.parts[0].text);
+
+            return {
+              success: true,
+              tips: Array.isArray(tipsArray) ? tipsArray : []
+            };
+        } catch (error) {
+            console.error("Gemini Tips API call failed:", error);
+            return {
+              success: false,
+              message: "Failed to generate tips. Please check your API key and connection."
+            };
+        }
+      };
+
+      // ==============================================
+      // UI: Display Monthly Insights
+      // ==============================================
+      const displayMonthlyInsights = async () => {
+        insightsContent.innerHTML = '<div class="insights-loading"><div class="loading-dots"><span></span><span></span><span></span></div><p style="margin-top: 15px;">Generating monthly insights...</p></div>';
+        insightsContent.classList.add('show');
+        collapseInsightsBtn.style.display = 'inline-block';
+
+        const result = await generateMonthlyInsights();
+
+        if (result.success) {
+          insightsContent.innerHTML = `
+            <div class="insights-paragraph">${result.insight}</div>
+          `;
+        } else {
+          insightsContent.innerHTML = `
+            <div class="error-message" style="text-align: center; padding: 20px;">
+              ${result.message}
+            </div>
+          `;
+        }
+      };
+
+      // ==============================================
+      // UI: Display Smart Tips
+      // ==============================================
+      const displaySmartTips = async () => {
+        insightsContent.innerHTML = '<div class="insights-loading"><div class="loading-dots"><span></span><span></span><span></span></div><p style="margin-top: 15px;">Generating smart tips...</p></div>';
+        insightsContent.classList.add('show');
+        collapseInsightsBtn.style.display = 'inline-block';
+
+        const result = await generateSmartTips();
+
+        if (result.success && result.tips.length > 0) {
+          const tipsHTML = result.tips.map((tip, index) => 
+            `<li><strong>${index + 1}.</strong> ${tip}</li>`
+          ).join('');
+          
+          insightsContent.innerHTML = `
+            <ul class="tips-list">
+              ${tipsHTML}
+            </ul>
+          `;
+        } else {
+          insightsContent.innerHTML = `
+            <div class="error-message" style="text-align: center; padding: 20px;">
+              ${result.message || "Failed to generate tips."}
+            </div>
+          `;
+        }
+      };
+
+      // ==============================================
+      // UI: Collapse/Expand Insights
+      // ==============================================
+      const toggleInsightsCollapse = () => {
+        if (insightsContent.classList.contains('show')) {
+          insightsContent.classList.remove('show');
+          collapseInsightsBtn.style.display = 'none';
+        }
+      };
+      
+      const addExpense = (newExpenseData) => {
+        const expenses = getExpenses();
+        const expenseToAdd = {
+            id: Date.now().toString(),
+            amount: parseFloat(newExpenseData.amount),
+            description: newExpenseData.description.trim(),
+            date: newExpenseData.date,
+            category: newExpenseData.category,
+        };
+        expenses.push(expenseToAdd);
+        saveExpenses(expenses);
+        renderExpenses(expenses);
+        updateSummaries();
+      };
+
+      const calculatePeriodTotal = (expenses, startDate, endDate) => {
+        return expenses
+          .filter(e => {
+            const expDate = new Date(e.date);
+            return expDate >= startDate && expDate <= endDate;
+          })
+          .reduce((sum, e) => sum + e.amount, 0);
+      };
+
+      const updateSummaries = () => {
+        const expenses = getExpenses();
+        const today = new Date();
+        
+        const totalAll = expenses.reduce((sum, e) => sum + e.amount, 0);
+        totalAllEl.textContent = `₹${totalAll.toFixed(2)}`;
+
+        const oneMonthAgo = new Date(today);
+        oneMonthAgo.setMonth(today.getMonth() - 1);
+        const total1Month = calculatePeriodTotal(expenses, oneMonthAgo, today);
+        total1MonthEl.textContent = `₹${total1Month.toFixed(2)}`;
+
+        const threeMonthsAgo = new Date(today);
+        threeMonthsAgo.setMonth(today.getMonth() - 3);
+        const total3Months = calculatePeriodTotal(expenses, threeMonthsAgo, today);
+        total3MonthsEl.textContent = `₹${total3Months.toFixed(2)}`;
+      };
+
+      const renderExpenses = (expenses) => {
+        expenseList.innerHTML = "";
+        
+        let sortedExpenses = [...expenses];
+        if (currentSort === 'recent') {
+          sortedExpenses.sort((a, b) => parseInt(b.id) - parseInt(a.id));
+        } else {
+          sortedExpenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+        }
+        
+        if (sortedExpenses.length === 0) {
+          emptyState.style.display = "block";
+        } else {
+          emptyState.style.display = "none";
+          sortedExpenses.forEach((expense) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${expense.date}</td>
+              <td>${expense.description || "-"}</td>
+              <td>${expense.category}</td>
+              <td>₹${expense.amount.toFixed(2)}</td>
+              <td class="actions">
+                <button class="btn btn-edit btn-sm" data-id="${expense.id}">Edit</button>
+                <button class="btn btn-danger btn-sm" data-id="${expense.id}">Delete</button>
+              </td>`;
+            expenseList.appendChild(row);
+          });
+        }
+      };
+
+      const validateForm = () => { 
+        return true; 
+      };
+      
+      const clearForm = () => { 
+        form.reset();
+        expenseIdInput.value = "";
+        submitButton.textContent = "Add Expense";
+        dateInput.value = new Date().toISOString().split("T")[0];
+      };
+
+      const handleFormSubmit = (event) => {
+        event.preventDefault();
+        if (!validateForm()) return;
+        const expenses = getExpenses();
+        const id = expenseIdInput.value;
+        const newExpense = {
+          id: id || Date.now().toString(),
+          amount: parseFloat(amountInput.value),
+          description: descriptionInput.value.trim(),
+          date: dateInput.value,
+          category: categorySelect.value,
+        };
+
+        if (id) {
+          const expenseIndex = expenses.findIndex((exp) => exp.id === id);
+          if (expenseIndex > -1) expenses[expenseIndex] = newExpense;
+        } else {
+          expenses.push(newExpense);
+        }
+
+        saveExpenses(expenses);
+        renderExpenses(expenses);
+        updateSummaries();
+        clearForm();
+      };
+      
+      const handleListClick = (event) => {
+        const target = event.target;
+        if (target.classList.contains('btn-danger')) {
+          expenseIdToDelete = target.dataset.id;
+          deleteModalOverlay.classList.add('show');
+        } else if (target.classList.contains('btn-edit')) {
+          const id = target.dataset.id;
+          const expenses = getExpenses();
+          const expense = expenses.find((exp) => exp.id === id);
+          if (expense) {
+            expenseIdInput.value = expense.id;
+            amountInput.value = expense.amount;
+            descriptionInput.value = expense.description;
+            dateInput.value = expense.date;
+            categorySelect.value = expense.category;
+            submitButton.textContent = "Update Expense";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }
+      };
+      
+      const handleDeleteConfirmed = () => {
+        if (expenseIdToDelete) {
+          const expenses = getExpenses();
+          const updatedExpenses = expenses.filter((exp) => exp.id !== expenseIdToDelete);
+          saveExpenses(updatedExpenses);
+          renderExpenses(updatedExpenses);
+          updateSummaries();
+          expenseIdToDelete = null;
+        }
+        deleteModalOverlay.classList.remove('show');
+      };
+      
+      const handleDeleteCancelled = () => {
+        expenseIdToDelete = null;
+        deleteModalOverlay.classList.remove('show');
+      };
+
+      const addMessageToChat = (text, sender) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('chat-message');
+        
+        if (sender === 'loading') {
+            messageDiv.classList.add('ai-message');
+            messageDiv.innerHTML = `<div class="loading-dots"><span></span><span></span><span></span></div>`;
+        } else {
+            messageDiv.classList.add(sender === 'user' ? 'user-message' : (sender === 'error' ? 'error-message' : 'ai-message'));
+            messageDiv.textContent = text;
+        }
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return messageDiv;
+      };
+
+      const handleChatSubmit = async () => {
+        const userInput = chatInput.value.trim();
+        if (!userInput) return;
+
+        addMessageToChat(userInput, 'user');
+        chatInput.value = '';
+
+        const loadingIndicator = addMessageToChat('', 'loading');
+
+        const aiResponse = await getChatResponse(userInput);
+
+        loadingIndicator.remove();
+
+        if (!aiResponse) {
+            addMessageToChat("Sorry, I couldn't connect to the assistant. Please check the API key and your connection.", 'error');
+            return;
+        }
+
+        if (aiResponse.intent === 'add' && aiResponse.expense) {
+            addExpense(aiResponse.expense);
+        }
+        
+        addMessageToChat(aiResponse.reply, aiResponse.intent === 'error' ? 'error' : 'ai');
+      };
+
+      const initializeChat = () => {
+        chatSendBtn.addEventListener('click', handleChatSubmit);
+        chatInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                handleChatSubmit();
+            }
+        });
+        addMessageToChat("Hello! How can I help you with your expenses today?", "ai");
+      };
+
+      const handleSortChange = (event) => {
+        if (event.target.classList.contains('btn-filter')) {
+          document.querySelectorAll('.btn-filter[data-sort]').forEach(btn => {
+            btn.classList.remove('active');
+          });
+          event.target.classList.add('active');
+          currentSort = event.target.sort;
+          renderExpenses(getExpenses());
+        }
+      };
+
+      const handleCustomPeriod = () => {
+        const startDate = new Date(customStartDateEl.value);
+        const endDate = new Date(customEndDateEl.value);
+        
+        if (!customStartDateEl.value || !customEndDateEl.value) {
+          customPeriodTotalEl.textContent = '';
+          return;
+        }
+
+        if (startDate > endDate) {
+          customPeriodTotalEl.textContent = 'Invalid range';
+          customPeriodTotalEl.style.color = 'var(--secondary-color)';
+          return;
+        }
+
+        const expenses = getExpenses();
+        const total = calculatePeriodTotal(expenses, startDate, endDate);
+        customPeriodTotalEl.textContent = `₹${total.toFixed(2)}`;
+        customPeriodTotalEl.style.color = 'var(--primary-color)';
+      };
+      
+      const initialize = () => {
+        let expenses = getExpenses();
+        dateInput.value = new Date().toISOString().split("T")[0];
+        renderExpenses(expenses);
+        updateSummaries();
+        
+        form.addEventListener("submit", handleFormSubmit);
+        expenseList.addEventListener("click", handleListClick);
+        confirmDeleteBtn.addEventListener('click', handleDeleteConfirmed);
+        cancelDeleteBtn.addEventListener('click', handleDeleteCancelled);
+
+        document.querySelector('.filter-controls').addEventListener('click', handleSortChange);
+        applyCustomPeriodBtn.addEventListener('click', handleCustomPeriod);
+
+        // NEW: Initialize Insights & Tips buttons
+        generateInsightsBtn.addEventListener('click', displayMonthlyInsights);
+        generateTipsBtn.addEventListener('click', displaySmartTips);
+        collapseInsightsBtn.addEventListener('click', toggleInsightsCollapse);
+
+        initializeChat();
+      };
+
+      initialize();
+    })();
+  </script>
+</body>
+</html>
