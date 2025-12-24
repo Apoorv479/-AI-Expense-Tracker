@@ -1,86 +1,87 @@
- Features
-1. Add, Edit & Delete Expenses
+# AI-Powered Smart Expense Tracker
 
-Enter Amount, Description, Date, and Category
+A modern, offline-first expense manager featuring an intelligent AI chatbot for natural language entry and smart financial insights. Built with a focus on Glass-morphism aesthetics and Privacy.
 
-Edit past entries anytime
+![Project Status](https://img.shields.io/badge/Status-Active-success)
+![Tech Stack](https://img.shields.io/badge/Tech-HTML%20%7C%20CSS%20%7C%20JS-blue)
+![AI](https://img.shields.io/badge/AI-Gemini%20API-orange)
 
-Smooth UI animations
+---
 
-Beautiful modern theme with gradients and glass UI
+## Key Features
 
- 2. AI Chat Assistant 
+### 1. Comprehensive Expense Management
+* **CRUD Operations:** Easily Add, Edit, and Delete expenses.
+* **Detailed Entries:** Record Amount, Description, Date, and Category.
+* **Flexible Editing:** Edit past entries anytime with ease.
+* **Smart UI:** Smooth animations for adding and removing items.
 
-A built-in chatbot that can:
+### 2. AI Chat Assistant
+A powerful built-in chatbot that simplifies expense tracking using Natural Language Processing.
+* **Natural Language Entry:** Simply type:
+    > "Add ₹250 for groceries today"
+* **Smart Date Recognition:** Understands context like "Yesterday", "Last Friday", or "Today morning".
+* **Auto-Categorization:** Automatically detects the category based on your description.
+* **Q&A:** Ask questions about your monthly spending trends.
 
-Add expenses through natural language
+### 3. Expense Summary Dashboard
+Get a clear view of your financial health at a glance.
+* **Live Updates:** Fully automatic calculations.
+* **Key Metrics:**
+    * Total Lifetime Spending
+    * Last 1 Month Total
+    * Last 3 Months Total
 
-“Add ₹250 for groceries today”
+### 4. Custom Analytics
+* **Date-Range Analysis:** Select specific Start and End dates to audit your spending.
+* **Instant Reports:** See totals for holidays, specific weeks, or custom budget periods instantly.
 
-Understand date phrases
+### 5. Sorting & Filtering
+Keep your data organized with clean UI transitions.
+* Sort by **Recently Added**.
+* Sort by **Actual Expense Date**.
 
-“Yesterday”, “last Friday”, “today morning”
+### 6. AI Insights & Smart Tips (Powered by Gemini)
+Go beyond tracking with actionable financial advice.
+* **Monthly Summaries:** Get a text summary of your financial month.
+* **Trend Detection:** Identify where you are overspending.
+* **Money-Saving Tips:** Receive personalized, friendly advice.
 
-Detect category automatically
+### 7. Privacy & Offline First
+* **LocalStorage Support:** All data is saved directly in your browser.
+* **No Backend Required:** The app works 100% offline (excluding AI features).
+* **Secure:** Your data stays on your device.
 
-Answer queries about monthly spending
+---
 
- 3. Expense Summary Dashboard
+## UI/UX Highlights
 
-Shows:
+This project focuses heavily on a modern, visually pleasing user experience:
+* **Gradient Aesthetic:** Beautiful, modern background themes.
+* **Glass-morphism:** Frosted glass cards and containers for a sleek look.
+* **Neon Highlights:** Subtle glow effects for key elements.
+* **Responsive Design:** Fully optimized for Mobile, Tablet, and Desktop.
 
-Total spending
+---
 
-Last 1 month total
+## Tech Stack
 
-Last 3 months total
+* **Frontend:** HTML5, CSS3 (Custom Variables & Animations), JavaScript (ES6+)
+* **AI Integration:** Google Gemini API
+* **Storage:** Browser LocalStorage API
 
-Fully automatic, updates live
+---
 
- 4. Custom Date-Range Analysis
+## How to Run
 
-Select start and end date
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/Apoorv479/-AI-Expense-Tracker.git
+    ```
+2.  **Open the project:**
+    Simply open the `index.html` file in any modern web browser.
+3.  **Setup API Key:**
+    * Click on the Settings/API icon in the app.
+    * Enter your free Google Gemini API key to enable AI features.
 
-Instantly see the total for that period
-
-Useful for budgeting & audits
-
- 5. Sorting & Filtering
-
-Sort expenses by:
-
-Recently added
-
-By actual date
-
-Clean UI with smooth transitions
-
- 6. AI Insights & Smart Tips
-
-Using Gemini API:
-
-Monthly financial summary
-
-Spending trend detection
-
-Personalized money-saving recommendations
-
-Actionable, friendly tips with emojis
-
- 7. LocalStorage Support
-
-Your data is saved in the browser.
-No backend needed.
-Everything works offline.
- U
- I Highlights
-
-Gradient aesthetic modern theme
-
-Neon highlights
-
-Glass-morphism cards
-
-Smooth animations
-
-Responsive layout → works on mobile, tablet, and desktop
+---
