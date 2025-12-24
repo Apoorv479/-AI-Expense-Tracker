@@ -2,9 +2,7 @@
 
 A modern, offline-first expense manager featuring an intelligent AI chatbot for natural language entry and smart financial insights. Built with a focus on Glass-morphism aesthetics and Privacy.
 
-![Project Status](https://img.shields.io/badge/Status-Active-success)
-![Tech Stack](https://img.shields.io/badge/Tech-HTML%20%7C%20CSS%20%7C%20JS-blue)
-![AI](https://img.shields.io/badge/AI-Gemini%20API-orange)
+
 
 ---
 
